@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #F7F8FA;
+    color: #0D0F12;
+  }
+
+  ::selection { background: #2563EB22; }
+
+  :focus-visible {
+    outline: 2px solid #2563EB;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+@layer components {
+  .ticker { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: 0.04em; }
+  .data-value { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+
+  .skeleton {
+    background: linear-gradient(90deg, #E2E5EA 25%, #EEF0F3 50%, #E2E5EA 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #E2E5EA;
+    border-radius: 8px;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium
+           bg-accent text-white rounded-md transition-colors
+           hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium
+           bg-white text-ink border border-border rounded-md transition-colors
+           hover:bg-surface disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 text-sm bg-white border border-border rounded-md
+           placeholder:text-muted transition-colors
+           focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent;
+  }
+
+  .label { @apply block text-xs font-medium text-muted mb-1.5 uppercase tracking-wide; }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+}
