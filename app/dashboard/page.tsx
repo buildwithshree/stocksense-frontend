@@ -2,9 +2,11 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, getApiErrorMessage } from "@/lib/api";
-import { PredictionResponse, WatchlistItem } from "@/types";
+import { usePrediction } from "@/hooks/usePrediction";
+import { WatchlistItem } from "@/types";
 import { Navbar } from "@/components/layout/Navbar";
 import { PredictionCard } from "@/components/prediction/PredictionCard";
+import { TrainingState } from "@/components/prediction/TrainingState";
 import { PredictionSkeleton } from "@/components/ui/Skeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { Search } from "lucide-react";
@@ -15,15 +17,16 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const qc = useQueryClient();
 
-  const { data: prediction, isFetching, isError, error: qError } = useQuery<PredictionResponse>({
-    queryKey: ["prediction", submitted],
-    queryFn: async () => {
-      const { data } = await api.post("/api/predictions", { ticker: submitted });
-      return data;
-    },
-    enabled: !!submitted,
-    retry: false,
-  });
+  // usePrediction handles the ready/training discriminated union AND the
+  // auto-poll-until-ready loop internally — see hooks/usePrediction.ts.
+  const {
+    prediction,
+    isTraining,
+    trainingMessage,
+    isFetching,
+    isError,
+    error: qError,
+  } = usePrediction(submitted);
 
   const { data: watchlist } = useQuery<WatchlistItem[]>({
     queryKey: ["watchlist"],
@@ -44,6 +47,12 @@ export default function DashboardPage() {
   };
 
   const isSaved = prediction ? watchlist?.some(w => w.ticker === prediction.ticker) : false;
+
+  // Only show the full-card skeleton on the very first fetch for this
+  // ticker — once we know we're in the training-and-polling loop, show
+  // TrainingState instead so repeated background refetches don't flash
+  // the skeleton every retryAfterSeconds interval.
+  const showSkeleton = isFetching && !isTraining && !prediction;
 
   return (
     <div className="min-h-screen bg-surface">
@@ -72,8 +81,14 @@ export default function DashboardPage() {
 
         {error && <div className="mb-4"><ErrorAlert message={error} onDismiss={() => setError("")} /></div>}
         {isError && <div className="mb-4"><ErrorAlert message={getApiErrorMessage(qError)} /></div>}
-        {isFetching && <PredictionSkeleton />}
-        {prediction && !isFetching && (
+
+        {showSkeleton && <PredictionSkeleton />}
+
+        {isTraining && submitted && (
+          <TrainingState ticker={submitted} message={trainingMessage ?? "Training in progress…"} />
+        )}
+
+        {prediction && !isTraining && (
           <PredictionCard
             data={prediction}
             onSaveWatchlist={() => saveWatchlist.mutate(prediction.ticker)}

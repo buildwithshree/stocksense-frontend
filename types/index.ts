@@ -5,3 +5,21 @@ export interface PredictionHistoryItem { id:string; ticker:string; generatedAt:s
 export interface WatchlistItem { id:string; ticker:string; addedAt:string; }
 export interface PagedResponse<T> { content:T[]; page:number; size:number; totalElements:number; totalPages:number; }
 export interface AdminMetrics { totalUsers:number; totalPredictions:number; predictionsLast24h:number; failedPredictionsLast24h:number; topTickers:{ticker:string;requestCount:number}[]; modelSummaries:{modelName:string;averageRmse:number;averageInferenceTimeMs:number;trainingRuns:number}[]; }
+
+// Mirrors the backend's sealed PredictionOutcome (PredictionReady /
+// PredictionTraining) and the ML API's 200/202 contract underneath it.
+// Modelled as a discriminated union on `status` so every place that
+// consumes a prediction result is forced by TypeScript to handle BOTH
+// cases — same reasoning as the backend's sealed interface: no nullable
+// fields to misuse, no "forgot to check for the training case" bugs.
+export interface PredictionReady {
+  status: "ready";
+  data: PredictionResponse;
+}
+export interface PredictionTraining {
+  status: "training";
+  ticker: string;
+  message: string;
+  retryAfterSeconds: number;
+}
+export type PredictionOutcome = PredictionReady | PredictionTraining;
