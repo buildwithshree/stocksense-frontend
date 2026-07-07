@@ -44,7 +44,8 @@ export function RiskGauge({ score, label, size = 120 }: RiskGaugeProps) {
           {score}
         </text>
         <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9" fill="#6B7280"
-          fontFamily="Inter, sans-serif" letterSpacing="0.08em" textTransform="uppercase">
+          fontFamily="Inter, sans-serif" letterSpacing="0.08em"
+          style={{ textTransform: "uppercase" }}>
           / 100
         </text>
       </svg>
